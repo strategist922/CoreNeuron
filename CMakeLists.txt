@@ -57,6 +57,7 @@ option(ENABLE_SOA "Enable SoA Memory Layout" ON)
 option(DISABLE_HOC_EXP "Disable wrapping exp with hoc_exp()" ON)
 option(ENABLE_OPENACC_INFO "Enable OpenACC compiler information messages" OFF)
 option(ENABLE_SPLAYTREE_QUEUING "Enable use of Splay tree for spike queuing" OFF)
+option(ENABLE_DLB "Enable use of Dynamic Load Balancing (DLB) Library" OFF)
 
 ## mech / mod options
 set(ADDITIONAL_MECHPATH "" CACHE PATH "Search path for optional additional mechanism MOD files")
@@ -95,6 +96,19 @@ if (ENABLE_SOA)
     add_definitions("-DLAYOUT=0")
 else()
     add_definitions("-DLAYOUT=1")
+endif()
+
+#find DLB package from BSC
+if (ENABLE_DLB)
+    find_package(DLB)
+
+    if(DLB_FOUND)
+        include_directories(${DLB_INCLUDE_DIR})
+        add_definitions("-DDLB")
+    else(DLB_FOUND)
+        message(FATAL_ERROR "Can't find DLB installation, add install path to CMAKE_PREFIX_PATH!")
+    endif(DLB_FOUND)
+
 endif()
 
 #Disable hoc_exp wrapper for exp

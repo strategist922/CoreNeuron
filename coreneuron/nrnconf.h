@@ -53,6 +53,10 @@ typedef char Symbol;
 #define VEC_AREA(i) (_nt->_actual_area[(i)])
 #define VECTORIZE 1
 
+#if defined(DLB)
+#include "DLB_interface.h"
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif

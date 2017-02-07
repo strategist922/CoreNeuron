@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Blue Brain Project
+# Copyright (c) 2017, Blue Brain Project
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification,
@@ -25,24 +25,41 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/coreneuron ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_BINARY_DIR}/coreneuron)
+# FindDLB
+# -------------
+#
+# Find Dynamic Load Balancing (DLB) library from BSC
+#
+#
+#   find_package(DLB REQUIRED)
+#   include_directories(${DLB_INCLUDE_DIRS})
+#   target_link_libraries(foo ${DLB_LIBRARIES})
+#
+# This module sets the following variables:
+#
+# ::
+#
+#   DLB_FOUND - set to true if the library is found
+#   DLB_INCLUDE_DIRS - list of required include directories
+#   DLB_LIBRARIES - list of libraries to be linked
 
-# The mechanism registration function will be defined depending on whether we
-# are using neurodamus list of mechanisms
-if(ADDITIONAL_MECHS OR ADDITIONAL_MECHPATH)
-    add_definitions(-DADDITIONAL_MECHS)
-endif()
+#=============================================================================
+# Copyright 2015 Adrien Devresse <adrien.devresse@epfl.ch>
+#
+#=============================================================================
+# (To distribute this file outside of CMake, substitute the full
+#  License text for the above reference.)
 
-FILE(GLOB coreneuron_exec_src "*.c*")
 
-add_executable(coreneuron_exec ${coreneuron_exec_src})
+# UNIX paths are standard, no need to write.
+find_path(DLB_INCLUDE_DIR DLB_interface.h)
 
-set_target_properties(coreneuron_exec PROPERTIES
-                            OUTPUT_NAME "coreneuron_exec"
-                            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+find_library(DLB_LIBRARY dlb)
+get_filename_component(DLB_LIB_DIR ${DLB_LIBRARY} DIRECTORY)
 
-target_link_libraries(coreneuron_exec coreneuron ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES} ${reportinglib_LIBRARY} ${DLB_LIBRARY})
+# Checks 'REQUIRED', 'QUIET' and versions.
+include(FindPackageHandleStandardArgs)
 
-install(TARGETS coreneuron_exec
-         DESTINATION ${BIN_INSTALL_DIR}/)
-
+find_package_handle_standard_args(DLB
+  FOUND_VAR DLB_FOUND
+  REQUIRED_VARS DLB_INCLUDE_DIR DLB_LIBRARY DLB_LIB_DIR)
