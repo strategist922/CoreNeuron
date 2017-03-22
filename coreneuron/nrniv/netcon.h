@@ -30,6 +30,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #define netcon_h
 
 #include "coreneuron/nrnmpi/nrnmpi.h"
+#include "coreneuron/nrniv/multisend.h"
 
 #undef check
 #if MAC
@@ -144,6 +145,9 @@ class PreSyn : public ConditionEvent {
 
     virtual double value(NrnThread*);
     void record(double t);
+#if NRN_MULTISEND
+    int multisend_index_;
+#endif
 };
 
 class InputPreSyn : public DiscreteEvent {
@@ -158,6 +162,9 @@ class InputPreSyn : public DiscreteEvent {
     virtual int type() {
         return InputPreSynType;
     }
+#if NRN_MULTISEND
+    int multisend_phase2_index_;
+#endif
 };
 
 class NetParEvent : public DiscreteEvent {

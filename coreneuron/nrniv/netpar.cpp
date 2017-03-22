@@ -48,7 +48,6 @@ static double t_exchange_;
 static double dt1_;  // 1/dt
 
 extern "C" {
-extern NetCvode* net_cvode_instance;
 extern double t, dt;
 extern void nrn_fake_fire(int gid, double firetime, int fake_out);
 int nrnmpi_spike_compress(int nspike, bool gid_compress, int xchng_meth);
