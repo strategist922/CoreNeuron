@@ -30,7 +30,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #define netcon_h
 
 #include "coreneuron/nrnmpi/nrnmpi.h"
-#include "coreneuron/nrniv/multisend.h"
 
 #undef check
 #if MAC

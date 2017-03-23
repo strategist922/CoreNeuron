@@ -42,6 +42,7 @@ class InputPreSyn;
 #include "coreneuron/nrniv/netcvode.h"
 #include "coreneuron/nrniv/nrniv_decl.h"
 #include "coreneuron/nrniv/ivocvect.h"
+#include "coreneuron/nrniv/multisend.h"
 #include "coreneuron/nrniv/nrn_assert.h"
 
 static double t_exchange_;
@@ -267,6 +268,11 @@ void nrn_spike_exchange_init() {
     // printf("nrnmpi_use=%d active=%d\n", nrnmpi_use, active_);
     std::map<int, InputPreSyn*>::iterator gid2in_it;
     usable_mindelay_ = mindelay_;
+#if NRN_MULTISEND
+    if (use_multisend_ && n_multisend_interval == 2) {
+        usable_mindelay_ *= 0.5;
+    }
+#endif
     if (nrn_nthread > 1) {
         usable_mindelay_ -= dt;
     }
@@ -280,6 +286,12 @@ void nrn_spike_exchange_init() {
 
 #if TBUFSIZE
     itbuf_ = 0;
+#endif
+
+#if NRN_MULTISEND
+    if (use_multisend_) {
+        nrn_multisend_init();
+    }
 #endif
 
     if (n_npe_ != nrn_nthread) {
@@ -331,6 +343,12 @@ void nrn_spike_exchange(NrnThread* nt) {
     if (!active_) {
         return;
     }
+#if NRN_MULTISEND
+    if (use_multisend_) {
+        nrn_multisend_receive(nt);
+        return;
+    }
+#endif
     if (use_compress_) {
         nrn_spike_exchange_compressed(nt);
         return;
@@ -845,6 +863,12 @@ int nrnmpi_spike_compress(int nspike, bool gid_compress, int xchng_meth) {
     if (nrnmpi_numprocs < 2) {
         return 0;
     }
+#if NRN_MULTISEND
+    if (xchng_meth > 0) {
+        use_multisend_ = 1;
+        return 0;
+    }
+#endif
     nrn_assert(xchng_meth == 0);
     if (nspike >= 0) {
         ag_send_nspike_ = 0;

@@ -323,7 +323,7 @@ static void fill_multisend_lists(int use_phase2,
     // two lists found in gid2in_.
     int phase1_index = 0;
     int phase2_index = 0;
-    // Count and fill in multisend_index and multsend_phase2_index_
+    // Count and fill in multisend_index and multisend_phase2_index_
     // From the counts can allocate targets_phase1 and targets_phase2
     // Then can iterate again and copy r to proper target locations.
     for (int i = 0; i < sz;) {
@@ -336,7 +336,7 @@ static void fill_multisend_lists(int use_phase2,
             if (gid2in_it != gid2in.end()) {  // phase 2 target list
                 ips = gid2in_it->second;
                 ips->multisend_phase2_index_ = phase2_index;
-                phase2_index = 1 + size;  // count + ranks
+                phase2_index += 1 + size;  // count + ranks
                 for (int j = 0; j < size; ++j) {
                     i++;
                 }
@@ -361,6 +361,7 @@ static void fill_multisend_lists(int use_phase2,
     targets_phase1 = new int[phase1_index];
     targets_phase2 = new int[phase2_index];
 
+    // printf("%d sz=%d\n", nrnmpi_myid, sz);
     for (int i = 0; i < sz;) {
         InputPreSyn* ips = NULL;
         int gid = r[i++];
@@ -374,9 +375,10 @@ static void fill_multisend_lists(int use_phase2,
                 int* ranks = targets_phase2 + p;
                 ranks[0] = size;
                 ranks += 1;
-                // printf("%d %d phase2 size=%d\n", nrnmpi_myid, gid, size);
+                // printf("%d i=%d gid=%d phase2 size=%d\n", nrnmpi_myid, i, gid, size);
                 for (int j = 0; j < size; ++j) {
                     ranks[j] = r[i++];
+                    // printf("%d   j=%d rank=%d\n", nrnmpi_myid, j, ranks[j]);
                     assert(ranks[j] != nrnmpi_myid);
                 }
             }
@@ -388,15 +390,17 @@ static void fill_multisend_lists(int use_phase2,
             PreSyn* ps = gid2out_it->second;
             int p = ps->multisend_index_;
             int* ranks = targets_phase1 + p;
-            ranks[0] = size;
-            ranks[1] = size;
+            int total = size;
             if (use_phase2 > 0) {
-                ranks[1] = r[i++];
+                total = r[i++];
             }
+            ranks[0] = total;
+            ranks[1] = size;
             ranks += 2;
-            // printf("%d %d phase1 size=%d\n", nrnmpi_myid, gid, size);
+            // printf("%d i=%d gid=%d phase1 size=%d total=%d\n", nrnmpi_myid, i, gid, size, total);
             for (int j = 0; j < size; ++j) {
                 ranks[j] = r[i++];
+                // printf("%d   j=%d rank=%d\n", nrnmpi_myid, j, ranks[j]);
                 // There never was a possibility of send2self
                 // because an output presyn is never in gid2in_.
                 assert(ranks[j] != nrnmpi_myid);
@@ -614,7 +618,7 @@ static int setup_target_lists(int use_phase2, int** r_return) {
         if (tl->rank < 0) {
             // When the output gid does not generate spikes, that rank
             // is not interested if there is a target list for it.
-            // If the output gid dies not exist, there is no rank.
+            // If the output gid does not exist, there is no rank.
             // In either case ignore this target list.
             continue;
         }
