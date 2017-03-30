@@ -135,45 +135,49 @@ In order to see the command line options, you can use:
 
 ```bash
 /path/to/isntall/directory/coreneuron_exec --help
--a, -gpu, --gpu          Enable use of GPUs. The default implies cpu only run.
--b, --spikebuf ARG       Spike buffer size.
--c, --threading          Parallel threads. The default is serial threads
--d, --datpath ARG        path containing CoreNeuron data files.
+-b, --spikebuf ARG       Spike buffer size. (100000)
+-c, --threading          Parallel threads. The default is serial threads.
+-d, --datpath ARG        Path containing CoreNeuron data files. (.)
 -dt, --dt ARG            Fixed time step. The default value is set by
-                         defaults.dat
--e, --tstop ARG          Stop time (ms).
--f, --filesdat ARG       Name for the distribution file
--g, --prcellgid ARG      Output prcellstate information for the gid NUMBER
+                         defaults.dat or is 0.025.
+-e, --tstop ARG          Stop time (ms). (100)
+-f, --filesdat ARG       Name for the distribution file. (files.dat)
+-g, --prcellgid ARG      Output prcellstate information for the gid NUMBER.
+-gpu, --gpu              Enable use of GPUs. The default implies cpu only run.
 -h, --help               Print a usage message briefly summarizing these
-                         command-line options and the bug-reporting address,
-                         then exit.
--i, --dt_io ARG          Dt of I/O
--k, --forwardskip ARG    forwardskip to TIME
+                         command-line options, then exit.
+-i, --dt_io ARG          Dt of I/O. (0.1)
+-k, --forwardskip ARG    Forwardskip to TIME
 -l, --celsius ARG        Temperature in degC. The default value is set in
-                         defaults.dat or else is 34.0
+                         defaults.dat or else is 34.0.
 -mpi                     Enable MPI. In order to initialize MPI environment this
                          argument must be specified.
--o, --outpath ARG        Path to place output data files
--p, --pattern ARG        Apply patternstim with the spike file FILE (char*). The
-                         default value is 'NULL'.
+-o, --outpath ARG        Path to place output data files. (.)
+-p, --pattern ARG        Apply patternstim using the specified spike file.
 -R, --cell-permute ARG   Cell permutation, 0 No; 1 optimise node adjacency; 2
-                         optimize parent adjacency.
+                         optimize parent adjacency. (1)
 -r, --report ARG         Enable voltage report (0 for disable, 1 for soma, 2 for
                          full compartment).
--s, --tstart ARG         Start time (ms)
+-s, --tstart ARG         Start time (ms). (0)
 -v, --voltage ARG        Initial voltage used for nrn_finitialize(1, v_init). If
-                         1000, then nrn_finitialize(0,...)
--W, --nwarp ARG          number of warps to balance
--w, --dt_report ARG      Dt for soma reports (using ReportingLib)
+                         1000, then nrn_finitialize(0,...). (-65.)
+-W, --nwarp ARG          Number of warps to balance. (0)
+-w, --dt_report ARG      Dt for soma reports (using ReportingLib). (0.1)
 -x, --extracon ARG       Number of extra random connections in each thread to
                          other duplicate models (int).
 -z, --multiple ARG       Model duplication factor. Model size is normal size *
-                         MULTIPLE (int).
+                         (int).
+--binqueue               Use bin queue.
 --mindelay ARG           Maximum integration interval (likely reduced by minimum
-                         NetCon delay)
---read-config ARG        Read configurataion file
---show                   Print args
---write-config ARG       Write configurataion file
+                         NetCon delay). (10)
+--ms-phases ARG          Number of multisend phases, 1 or 2. (2)
+--ms-subintervals ARG    Number of multisend subintervals, 1 or 2. (2)
+--multisend              Use Multisend spike exchange instead of Allgather.
+--read-config ARG        Read configuration file filename.
+--show                   Print args.
+--spkcompress ARG        Spike compression. Up to ARG are exchanged during
+                         MPI_Allgather. (0)
+--write-config ARG       Write configuration file filename.
 
 ```
 
@@ -182,15 +186,17 @@ Default values for all parameters are printed by rank 0 on launch. E.g.
 $ cpu/bin/coreneuron_exec --show
 ...
 
---spikebuf = 100000      --prcellgid = -1         --cell-permute = 0
---nwarp = 0              --report = 0             --multiple = 1
+--spikebuf = 100000      --spkcompress = 0        --prcellgid = -1
+--cell-permute = 1       --nwarp = 0              --ms-subintervals = 2
+--ms-phases = 2          --report = 0             --multiple = 1
 --extracon = 0           --pattern = not set      --datpath = .
 --filesdat = files.dat   --outpath = .            --write-config = not set
 --read-config = not set  --tstart = 0             --tstop = 100
 --dt = -1000             --dt_io = 0.1            --voltage = -65
 --celsius = -1000        --forwardskip = 0        --dt_report = 0.1
 --mindelay = 10          --help = not set         --threading = not set
--gpu = not set           -mpi = not set           --show = set
+--gpu = not set          -mpi = not set           --show = set
+--multisend = not set    --binqueue = not set
 
 ...
 ```

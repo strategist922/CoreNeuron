@@ -38,15 +38,18 @@ static struct param_int {
     int dflt, low, high;
     const char* usage;
 } param_int_args[] = {
-    {"--spikebuf -b", 100000, 1, 2000000000, "Spike buffer size."},
-    {"--prcellgid -g", -1, -1, 2000000000, "Output prcellstate information for the gid NUMBER"},
-    {"--cell-permute -R", 0, 0, 3,
-     "Cell permutation, 0 No; 1 optimise node adjacency; 2 optimize parent adjacency."},
-    {"--nwarp -W", 0, 0, 1000000, "number of warps to balance"},
+    {"--spikebuf -b", 100000, 1, 2000000000, "Spike buffer size. (100000)"},
+    {"--spkcompress", 0, 0, 100000, "Spike compression. Up to ARG are exchanged during MPI_Allgather. (0)"},
+    {"--prcellgid -g", -1, -1, 2000000000, "Output prcellstate information for the gid NUMBER."},
+    {"--cell-permute -R", 1, 0, 3,
+     "Cell permutation, 0 No; 1 optimise node adjacency; 2 optimize parent adjacency. (1)"},
+    {"--nwarp -W", 0, 0, 1000000, "Number of warps to balance. (0)"},
+    {"--ms-subintervals", 2, 1, 2, "Number of multisend subintervals, 1 or 2. (2)"},
+    {"--ms-phases", 2, 1, 2, "Number of multisend phases, 1 or 2. (2)"},
     {"--report -r", 0, 0, 2,
      "Enable voltage report (0 for disable, 1 for soma, 2 for full compartment)."},
     {"--multiple -z", 1, 1, 10000000,
-     "Model duplication factor. Model size is normal size * MULTIPLE (int)."},
+     "Model duplication factor. Model size is normal size * (int)."},
     {"--extracon -x", 0, 0, 10000000,
      "Number of extra random connections in each thread to other duplicate models (int)."},
     {NULL, 0, 0, 0, NULL}};
@@ -56,30 +59,31 @@ static struct param_dbl {
     double dflt, low, high;
     const char* usage;
 } param_dbl_args[] = {
-    {"--tstart -s", 0., -1e9, 1e9, "Start time (ms)"},
-    {"--tstop -e", 100.0, 0.0, 1e9, "Stop time (ms)."},
-    {"--dt -dt", -1000., -1000., 1e9, "Fixed time step. The default value is set by defaults.dat"},
-    {"--dt_io -i", 0.1, 1e-9, 1e9, "Dt of I/O"},
+    {"--tstart -s", 0., -1e9, 1e9, "Start time (ms). (0)"},
+    {"--tstop -e", 100.0, 0.0, 1e9, "Stop time (ms). (100)"},
+    {"--dt -dt", -1000., -1000., 1e9, "Fixed time step. The default value is set by defaults.dat or is 0.025."},
+    {"--dt_io -i", 0.1, 1e-9, 1e9, "Dt of I/O. (0.1)"},
     {"--voltage -v", -65.0, 1e-9, 1e9,
-     "Initial voltage used for nrn_finitialize(1, v_init). If 1000, then nrn_finitialize(0,...)"},
+     "Initial voltage used for nrn_finitialize(1, v_init). If 1000, then nrn_finitialize(0,...). (-65.)"},
     {"--celsius -l", -1000., -1000., 1000.,
-     "Temperature in degC. The default value is set in defaults.dat or else is 34.0"},
-    {"--forwardskip -k", 0., 0., 1e9, "forwardskip to TIME"},
-    {"--dt_report -w", 0.1, 0.0, 1e9, "Dt for soma reports (using ReportingLib)"},
+     "Temperature in degC. The default value is set in defaults.dat or else is 34.0."},
+    {"--forwardskip -k", 0., 0., 1e9, "Forwardskip to TIME"},
+    {"--dt_report -w", 0.1, 0.0, 1e9, "Dt for soma reports (using ReportingLib). (0.1)"},
     {"--mindelay", 10., 0., 1e9,
-     "Maximum integration interval (likely reduced by minimum NetCon delay)"},
+     "Maximum integration interval (likely reduced by minimum NetCon delay). (10)"},
     {NULL, 0., 0., 0., NULL}};
 
 static struct param_flag {
     const char* names; /* space separated (includes - or --) */
     const char* usage;
 } param_flag_args[] = {
-    {"--help -h",
-     "Print a usage message briefly summarizing these command-line options and the bug-reporting address, then exit."},
-    {"--threading -c", "Parallel threads. The default is serial threads"},
-    {"--gpu -gpu -a", "Enable use of GPUs. The default implies cpu only run."},
+    {"--help -h", "Print a usage message briefly summarizing these command-line options, then exit."},
+    {"--threading -c", "Parallel threads. The default is serial threads."},
+    {"--gpu -gpu", "Enable use of GPUs. The default implies cpu only run."},
     {"-mpi", "Enable MPI. In order to initialize MPI environment this argument must be specified."},
-    {"--show", "Print args"},
+    {"--show", "Print args."},
+    {"--multisend", "Use Multisend spike exchange instead of Allgather."},
+    {"--binqueue", "Use bin queue."},
     {NULL, NULL}};
 
 static struct param_str {
@@ -87,13 +91,12 @@ static struct param_str {
     const char* dflt;
     const char* usage;
 } param_str_args[] = {
-    {"--pattern -p", "",
-     "Apply patternstim with the spike file FILE (char*). The default value is 'NULL'."},
-    {"--datpath -d", ".", "path containing CoreNeuron data files."},
-    {"--filesdat -f", "files.dat", "Name for the distribution file"},
-    {"--outpath -o", ".", "Path to place output data files"},
-    {"--write-config", "", "Write configurataion file"},
-    {"--read-config", "", "Read configurataion file"},
+    {"--pattern -p", "", "Apply patternstim using the specified spike file."},
+    {"--datpath -d", ".", "Path containing CoreNeuron data files. (.)"},
+    {"--filesdat -f", "files.dat", "Name for the distribution file. (files.dat)"},
+    {"--outpath -o", ".", "Path to place output data files. (.)"},
+    {"--write-config", "", "Write configuration file filename."},
+    {"--read-config", "", "Read configuration file filename."},
     {NULL, NULL, NULL}};
 
 static void graceful_exit(int);

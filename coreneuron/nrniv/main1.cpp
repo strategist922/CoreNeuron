@@ -48,6 +48,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "coreneuron/nrniv/nrn_acc_manager.h"
 #include "coreneuron/nrniv/profiler_interface.h"
 #include "coreneuron/nrniv/partrans.h"
+#include "coreneuron/nrniv/multisend.h"
 #include <string.h>
 
 #if 0
@@ -159,8 +160,18 @@ void nrn_init_and_load_data(int argc, char** argv, bool run_setup_cleanup) {
     nrn_setup_multiple = nrnopt_get_int("--multiple");
     nrn_setup_extracon = nrnopt_get_int("--extracon");
 
+    // multisend options
+    use_multisend_ = nrnopt_get_flag("--multisend") ? 1 : 0;
+    n_multisend_interval = nrnopt_get_int("--ms-subintervals");
+    use_phase2_ = (nrnopt_get_int("--ms-phases") == 2) ? 1 : 0;
+
     // reading *.dat files and setting up the data structures, setting mindelay
     nrn_setup(filesdat.c_str(), nrn_need_byteswap, run_setup_cleanup);
+
+    // Allgather spike compression and  bin queuing.
+    nrn_use_bin_queue_ = nrnopt_get_flag("--binqueue");
+    int spkcompress = nrnopt_get_int("--spkcompress");
+    nrnmpi_spike_compress(spkcompress, (spkcompress ? true : false), use_multisend_);
 
     report_mem_usage("After nrn_setup ");
 

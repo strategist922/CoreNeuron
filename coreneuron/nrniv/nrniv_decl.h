@@ -59,6 +59,8 @@ extern void nrn_mkPatternStim(const char* filename);
 extern int nrn_extra_thread0_vdata;
 extern void nrn_set_extra_thread0_vdata(void);
 extern Point_process* nrn_artcell_instantiate(const char* mechname);
+extern int nrnmpi_spike_compress(int nspike, bool gidcompress, int xchng);
+extern bool nrn_use_bin_queue_;
 extern int nrn_need_byteswap;
 
 extern void nrn_outputevent(unsigned char, double);
