@@ -32,6 +32,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "coreneuron/nrnoc/multicore.h"
 #include "coreneuron/nrnmpi/nrnmpi.h"
 
+#ifdef DLB
+#include <sched.h>
+#endif
+
 /*
 Now that threads have taken over the actual_v, v_node, etc, it might
 be a good time to regularize the method of freeing, allocating, and
@@ -444,14 +448,17 @@ void nrn_thread_table_check() {
 // on success change the openmp thread count
 void check_dlb_thread_update() {
 #ifdef DLB
+    cpu_set_t new_mask;
     int new_threads = 1;
-    int poll = DLB_poll_new_threads(&new_threads, NULL);
+    int poll = DLB_poll_new_threads(&new_threads, &new_mask);
     if (poll == 0) {
         fprintf(stderr, "DLB :: Setting %d threads\n", new_threads);
+        sched_setaffinity(0, sizeof(cpu_set_t), &new_mask);
         omp_set_num_threads(new_threads);
     }
 #endif
 }
+
 
 void nrn_multithread_job(void* (*job)(NrnThread*)) {
     int i;
