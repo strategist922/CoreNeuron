@@ -33,7 +33,7 @@ if(ADDITIONAL_MECHS OR ADDITIONAL_MECHPATH)
     add_definitions(-DADDITIONAL_MECHS)
 endif()
 
-FILE(GLOB coreneuron_exec_src "*.c*")
+FILE(GLOB coreneuron_exec_src "./coreneuron.cpp")
 
 add_executable(coreneuron_exec ${coreneuron_exec_src})
 
